@@ -11,9 +11,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
-@RestController
+@RestControllermysql -u root -p123 -e "SELECT * FROM school_attendance.attendance;"
+
 @RequestMapping("/api/attendance")
-@CrossOrigin(origins = "http://localhost:5173") // Cho phép Frontend React truy cập
+@CrossOrigin(origins = "*") // Cho phép Frontend React truy cập
 public class AttendanceController {
 
     private final AttendanceService attendanceService;
@@ -54,5 +55,4 @@ public class AttendanceController {
         }
     }
 
-    
 }
