@@ -35,7 +35,7 @@
 
 ---
 
-⚡ Quick Access (Dành Cho Thành Viên Nhóm)
+## ⚡ Quick Access (Dành Cho Thành Viên Nhóm)
 
 ```bash
 # Chuyển ngay sang nhánh dev để làm việc
