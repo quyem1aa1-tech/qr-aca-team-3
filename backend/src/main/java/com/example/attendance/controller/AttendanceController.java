@@ -11,8 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
-@RestControllermysql -u root -p123 -e "SELECT * FROM school_attendance.attendance;"
-
+@RestController
 @RequestMapping("/api/attendance")
 @CrossOrigin(origins = "*") // Cho phép Frontend React truy cập
 public class AttendanceController {
