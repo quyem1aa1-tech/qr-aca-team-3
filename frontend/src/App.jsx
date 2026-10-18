@@ -34,7 +34,9 @@ export default function App() {
     };
 
     try {
-      const res = await fetch("http://localhost:8080/api/attendance/check-in", {
+      const API_BASE = `http://${window.location.hostname}:8080`;
+
+      const res = await fetch(`${API_BASE}/api/attendance/check-in`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
