@@ -35,14 +35,24 @@
 
 ---
 
+⚡ Quick Access (Dành Cho Thành Viên Nhóm)
+
+```bash
+# Chuyển ngay sang nhánh dev để làm việc
+git checkout dev && git pull origin dev
+```
+
+---
+
 ## 📖 Hướng Dẫn Vận Hành Nhanh (Dành Cho Demo)
 
-### 1. Khởi động Cơ sở dữ liệu (MySQL)
+
+### 2. Khởi động Cơ sở dữ liệu (MySQL)
 Đảm bảo dịch vụ MySQL đang chạy và đã tạo database `school_attendance`:
 ```bash
 sudo service mysql start
 ```
-### 2. Khởi động Backend (Spring Boot)
+### 3. Khởi động Backend (Spring Boot)
 ```bash
 cd backend
 ./mvnw spring-boot:run
@@ -50,7 +60,7 @@ cd backend
 Server API lắng nghe tại: http://localhost:8080
 ```
 
-### 3. Khởi động Frontend (React)
+### 4. Khởi động Frontend (React)
 ```
 cd frontend
 npm install   # (chỉ cần chạy lần đầu tiên)
@@ -79,3 +89,5 @@ Giao diện điểm danh truy cập tại: http://localhost:5173
     - Thông báo thành công kèm trạng thái (ON_TIME hoặc LATE).
 
     - Cảnh báo nếu sinh viên đã được ghi nhận trong ngày.
+
+---
