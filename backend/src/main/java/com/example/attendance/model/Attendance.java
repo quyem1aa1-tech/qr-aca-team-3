@@ -1,90 +1,44 @@
 package com.example.attendance.model;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
+/**
+ * A student's attendance. The class comes from {@code qrCode.classRoom} and the day from
+ * {@code qrCode.createdAt}, so no duplicated columns are stored here.
+ */
 @Entity
-@Table(name = "attendance")
+@Table(name = "attendance",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"student_id", "qr_id"}))
 public class Attendance {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "attendance_id")
+    private Integer id;
 
-    @Column(name = "student_id", nullable = false, length = 50)
-    private String studentId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "student_id", nullable = false)
+    private Student student;
 
-    @Column(name = "full_name", nullable = false, length = 100)
-    private String fullName;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "qr_id", nullable = false)
+    private QrCode qrCode;
 
-    @Column(name = "email", nullable = false, length = 100)
-    private String email;
+    @Column(name = "scan_time", nullable = false)
+    private Instant scanTime;
 
-    @Column(name = "check_in_time", nullable = false)
-    private LocalDateTime checkInTime;
-
-    @Column(name = "status", nullable = false, length = 20)
-    private String status; // ON_TIME hoặc LATE
-
-    // Constructor mặc định (bắt buộc phải có đối với JPA)
     public Attendance() {
     }
 
-    // Constructor khởi tạo nhanh
-    public Attendance(String studentId, String fullName, String email, LocalDateTime checkInTime, String status) {
-        this.studentId = studentId;
-        this.fullName = fullName;
-        this.email = email;
-        this.checkInTime = checkInTime;
-        this.status = status;
+    public Attendance(Student student, QrCode qrCode, Instant scanTime) {
+        this.student = student;
+        this.qrCode = qrCode;
+        this.scanTime = scanTime;
     }
 
-    // --- Getters và Setters ---
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getStudentId() {
-        return studentId;
-    }
-
-    public void setStudentId(String studentId) {
-        this.studentId = studentId;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public LocalDateTime getCheckInTime() {
-        return checkInTime;
-    }
-
-    public void setCheckInTime(LocalDateTime checkInTime) {
-        this.checkInTime = checkInTime;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
+    public Integer getId() { return id; }
+    public Student getStudent() { return student; }
+    public QrCode getQrCode() { return qrCode; }
+    public Instant getScanTime() { return scanTime; }
 }
