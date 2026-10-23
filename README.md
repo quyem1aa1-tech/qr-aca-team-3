@@ -68,26 +68,3 @@ npm run dev
 
 Giao diện điểm danh truy cập tại: http://localhost:5173
 ```
-
-
-## 📱 Quy Trình Sử Dụng (Check-in Flow)
-
-1. Sinh viên mở trang giao diện Check-in.
-
-2. Nhập thông tin bắt buộc:
-
-    - Họ và tên
-
-    - Mã số sinh viên (MSSV)
-
-    - Địa chỉ Email
-
-3. Nhấn Xác nhận điểm danh.
-
-4. Hệ thống phản hồi tức thì:
-
-    - Thông báo thành công kèm trạng thái (ON_TIME hoặc LATE).
-
-    - Cảnh báo nếu sinh viên đã được ghi nhận trong ngày.
-
----
