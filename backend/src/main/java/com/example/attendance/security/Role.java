@@ -1,7 +1,7 @@
 package com.example.attendance.security;
 
 public enum Role {
-    STUDENT, TEACHER;
+    TEACHER;
 
     public static Role parse(String value) {
         if (value == null) return null;

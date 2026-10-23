@@ -29,8 +29,8 @@ public class TeacherController {
     }
 
     @PostMapping("/classes/{classId}/qr")
-    public ResponseEntity<QrResponse> createQr(AuthUser user, @PathVariable int classId) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(qrService.createQr(user.userId(), classId));
+    public ResponseEntity<QrCreatedResponse> createQr(AuthUser user, @PathVariable int classId) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(qrService.createQr(user.teacherId(), classId));
     }
 
     @GetMapping("/classes/{classId}/qr/active")

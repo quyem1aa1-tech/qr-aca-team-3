@@ -2,12 +2,12 @@ package com.example.attendance.service;
 
 import com.example.attendance.dto.Dtos.*;
 import com.example.attendance.exception.ApiException;
-import com.example.attendance.model.Attendance;
 import com.example.attendance.model.ClassRoom;
 import com.example.attendance.model.QrCode;
 import com.example.attendance.repository.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,17 +27,17 @@ public class QrService {
 
     private final ClassRepository classes;
     private final QrCodeRepository qrCodes;
-    private final EnrollmentRepository enrollments;
     private final AttendanceRepository attendances;
+    private final PasswordEncoder encoder;
     private final Duration qrLifetime;
 
-    public QrService(ClassRepository classes, QrCodeRepository qrCodes, EnrollmentRepository enrollments,
-                     AttendanceRepository attendances,
+    public QrService(ClassRepository classes, QrCodeRepository qrCodes,
+                     AttendanceRepository attendances, PasswordEncoder encoder,
                      @Value("${app.qr.expiration-minutes}") long qrMinutes) {
         this.classes = classes;
         this.qrCodes = qrCodes;
-        this.enrollments = enrollments;
         this.attendances = attendances;
+        this.encoder = encoder;
         this.qrLifetime = Duration.ofMinutes(qrMinutes);
     }
 
@@ -46,42 +46,28 @@ public class QrService {
         return classes.findByTeacherId(teacherId).stream().map(QrService::toDto).toList();
     }
 
-    @Transactional(readOnly = true)
-    public List<ClassResponse> studentClasses(int studentId) {
-        return enrollments.findByStudentIdWithClass(studentId).stream()
-                .map(e -> toDto(e.getClassRoom())).toList();
-    }
-
     @Transactional
-    public QrResponse createQr(int teacherId, int classId) {
+    public QrCreatedResponse createQr(int teacherId, int classId) {
         ClassRoom cls = ownedClass(teacherId, classId);
         byte[] bytes = new byte[32];
         RANDOM.nextBytes(bytes);
+        String token = HexFormat.of().formatHex(bytes);
+        String pin = String.format("%04d", RANDOM.nextInt(10000));
+        String pinHash = encoder.encode(pin);
+
         Instant now = Instant.now();
-        QrCode qr = qrCodes.save(new QrCode(cls, HexFormat.of().formatHex(bytes), now, now.plus(qrLifetime)));
-        return toDto(qr);
+        Instant expiresAt = now.plus(qrLifetime);
+        QrCode qr = qrCodes.save(new QrCode(cls, token, pinHash, now, expiresAt));
+        return new QrCreatedResponse(
+                qr.getId(), qr.getId(), qr.getToken(), pin,
+                qr.getCreatedAt(), qr.getCreatedAt(), qr.getExpiresAt(), qr.getExpiresAt()
+        );
     }
 
     @Transactional(readOnly = true)
     public Optional<QrResponse> activeQrForTeacher(int teacherId, int classId) {
         ownedClass(teacherId, classId);
         return qrCodes.findActive(classId, Instant.now()).map(QrService::toDto);
-    }
-
-    @Transactional(readOnly = true)
-    public Optional<StudentQrResponse> activeQrForStudent(int studentId, int classId) {
-        if (!classes.existsById(classId)) {
-            throw new ApiException(HttpStatus.NOT_FOUND, "Class not found");
-        }
-        if (!enrollments.existsByStudentIdAndClassRoomId(studentId, classId)) {
-            throw new ApiException(HttpStatus.FORBIDDEN, "You are not enrolled in this class");
-        }
-        return qrCodes.findActive(classId, Instant.now()).map(qr -> {
-            Instant attendedAt = attendances.findByStudentAndQr(studentId, qr.getId()).stream()
-                    .findFirst().map(Attendance::getScanTime).orElse(null);
-            return new StudentQrResponse(qr.getId(), qr.getToken(), qr.getCreatedAt(), qr.getExpiresAt(),
-                    attendedAt != null, attendedAt);
-        });
     }
 
     /** Attendance list for a class on a day (UTC), based on the QR creation date. */
@@ -99,9 +85,8 @@ public class QrService {
     }
 
     private ClassRoom ownedClass(int teacherId, int classId) {
-        ClassRoom cls = classes.findById(classId)
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Class not found"));
-        if (!cls.getTeacher().getId().equals(teacherId)) {
+        ClassRoom cls = classes.findById(classId).orElse(null);
+        if (cls == null || !cls.getTeacher().getId().equals(teacherId)) {
             throw new ApiException(HttpStatus.FORBIDDEN, "This class does not belong to you");
         }
         return cls;
@@ -112,6 +97,9 @@ public class QrService {
     }
 
     private static QrResponse toDto(QrCode q) {
-        return new QrResponse(q.getId(), q.getToken(), q.getCreatedAt(), q.getExpiresAt());
+        return new QrResponse(
+                q.getId(), q.getId(), q.getToken(),
+                q.getCreatedAt(), q.getCreatedAt(), q.getExpiresAt(), q.getExpiresAt()
+        );
     }
 }

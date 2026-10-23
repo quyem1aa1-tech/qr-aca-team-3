@@ -16,8 +16,14 @@ public class QrCode {
     @JoinColumn(name = "class_id", nullable = false)
     private ClassRoom classRoom;
 
-    @Column(nullable = false, unique = true, length = 128)
+    @Column(nullable = false, unique = true, length = 64)
     private String token;
+
+    @Column(name = "pin_hash", nullable = false, length = 255)
+    private String pinHash;
+
+    @Column(name = "failed_attempts", nullable = false)
+    private int failedAttempts = 0;
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
@@ -28,9 +34,10 @@ public class QrCode {
     public QrCode() {
     }
 
-    public QrCode(ClassRoom classRoom, String token, Instant createdAt, Instant expiresAt) {
+    public QrCode(ClassRoom classRoom, String token, String pinHash, Instant createdAt, Instant expiresAt) {
         this.classRoom = classRoom;
         this.token = token;
+        this.pinHash = pinHash;
         this.createdAt = createdAt;
         this.expiresAt = expiresAt;
     }
@@ -38,6 +45,10 @@ public class QrCode {
     public Integer getId() { return id; }
     public ClassRoom getClassRoom() { return classRoom; }
     public String getToken() { return token; }
+    public String getPinHash() { return pinHash; }
+    public void setPinHash(String pinHash) { this.pinHash = pinHash; }
+    public int getFailedAttempts() { return failedAttempts; }
+    public void setFailedAttempts(int failedAttempts) { this.failedAttempts = failedAttempts; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getExpiresAt() { return expiresAt; }
 }

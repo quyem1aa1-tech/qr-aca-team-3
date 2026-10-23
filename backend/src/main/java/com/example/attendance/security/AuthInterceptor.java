@@ -22,11 +22,17 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) return true;
         if (!(handler instanceof HandlerMethod hm)) return true;
+
+        String path = request.getRequestURI();
+        boolean isTeacherRoute = path.startsWith("/teacher") || path.startsWith("/classes");
 
         RequireAuth required = hm.getMethodAnnotation(RequireAuth.class);
         if (required == null) required = hm.getBeanType().getAnnotation(RequireAuth.class);
-        if (required == null) return true;
+        if (required == null && !isTeacherRoute) return true;
+
+        Role expectedRole = required != null ? required.value() : Role.TEACHER;
 
         String header = request.getHeader("Authorization");
         if (header == null || !header.regionMatches(true, 0, "Bearer ", 0, 7)) {
@@ -34,7 +40,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         }
         AuthUser user = jwtService.verify(header.substring(7).trim())
                 .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "Missing or invalid token"));
-        if (user.role() != required.value()) {
+        if (user.role() != expectedRole) {
             throw new ApiException(HttpStatus.FORBIDDEN, "Role not allowed for this resource");
         }
         request.setAttribute(ATTR, user);

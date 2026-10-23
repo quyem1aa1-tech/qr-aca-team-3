@@ -4,6 +4,11 @@ import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig({
+  envPrefix: ['VITE_', 'NEXT_PUBLIC_'],
+  server: {
+    host: '0.0.0.0',
+    port: 3000,
+  },
   plugins: [
     react(),
     babel({ presets: [reactCompilerPreset()] })

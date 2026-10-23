@@ -1,43 +1,50 @@
 package com.example.attendance.controller;
 
 import com.example.attendance.dto.Dtos.*;
-import com.example.attendance.security.AuthUser;
-import com.example.attendance.security.RequireAuth;
-import com.example.attendance.security.Role;
+import com.example.attendance.exception.ApiException;
 import com.example.attendance.service.AttendanceService;
-import com.example.attendance.service.QrService;
-import org.springframework.http.ResponseEntity;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Deque;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 @RestController
-@RequireAuth(Role.STUDENT)
 public class StudentController {
 
-    private final QrService qrService;
-    private final AttendanceService attendanceService;
+    private static final int IP_LIMIT_PER_MINUTE = 20;
+    private static final long ONE_MINUTE_MS = 60_000L;
 
-    public StudentController(QrService qrService, AttendanceService attendanceService) {
-        this.qrService = qrService;
+    private final AttendanceService attendanceService;
+    private final Map<String, Deque<Long>> ipHits = new ConcurrentHashMap<>();
+
+    public StudentController(AttendanceService attendanceService) {
         this.attendanceService = attendanceService;
     }
 
-    @GetMapping("/student/classes")
-    public List<ClassResponse> classes(AuthUser user) {
-        return qrService.studentClasses(user.userId());
-    }
-
-    /** 204 No Content when the class has no active QR. */
-    @GetMapping("/student/classes/{classId}/qr/active")
-    public ResponseEntity<StudentQrResponse> activeQr(AuthUser user, @PathVariable int classId) {
-        return qrService.activeQrForStudent(user.userId(), classId)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.noContent().build());
-    }
-
     @PostMapping("/attendance")
-    public AttendanceResponse attend(AuthUser user, @RequestBody AttendanceRequest request) {
-        return attendanceService.mark(user.userId(), request);
+    public AttendanceResponse attend(@RequestBody(required = false) AttendanceRequest request,
+                                     HttpServletRequest httpRequest) {
+        checkIpRateLimit(httpRequest.getRemoteAddr());
+        return attendanceService.mark(request);
+    }
+
+    private void checkIpRateLimit(String ip) {
+        if (ip == null) return;
+        long now = System.currentTimeMillis();
+        Deque<Long> timestamps = ipHits.computeIfAbsent(ip, k -> new ConcurrentLinkedDeque<>());
+        synchronized (timestamps) {
+            while (!timestamps.isEmpty() && now - timestamps.peekFirst() > ONE_MINUTE_MS) {
+                timestamps.pollFirst();
+            }
+            if (timestamps.size() >= IP_LIMIT_PER_MINUTE) {
+                throw new ApiException(HttpStatus.TOO_MANY_REQUESTS,
+                        "Too many attempts. Ask your teacher for a new QR.");
+            }
+            timestamps.addLast(now);
+        }
     }
 }

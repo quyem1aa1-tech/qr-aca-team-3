@@ -576,3 +576,59 @@ input:focus {
   border-radius: 14px;
   border: 1px dashed rgba(255, 255, 255, 0.12);
 }
+
+/* QR + Large 4-Digit PIN display */
+.qr-and-pin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.pin-display-box {
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  text-align: center;
+}
+
+.pin-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #7dd3fc;
+  margin-bottom: 6px;
+}
+
+.pin-digits {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 42px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  color: #ffffff;
+  line-height: 1.1;
+}
+
+.pin-hidden-note {
+  font-size: 12.5px;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+.expired-pill {
+  background: rgba(239, 68, 68, 0.18);
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.pin-input {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 22px !important;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-align: center;
+}

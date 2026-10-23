@@ -43,10 +43,14 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
+        java.util.Set<String> origins = new java.util.LinkedHashSet<>(java.util.Arrays.asList(allowedOrigins));
+        origins.add("http://localhost:3000");
+        origins.add("http://127.0.0.1:3000");
         registry.addMapping("/**")
-                .allowedOrigins(allowedOrigins)
+                .allowedOrigins(origins.toArray(String[]::new))
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("*");
+                .allowedHeaders("*")
+                .allowCredentials(false);
     }
 
     /** Lets controllers declare an {@link AuthUser} parameter. */

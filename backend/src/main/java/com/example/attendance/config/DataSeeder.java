@@ -39,13 +39,11 @@ public class DataSeeder implements CommandLineRunner {
 
         Teacher teacher = teachers.save(new Teacher("Nguyen Van A", "teacher@school.edu",
                 encoder.encode("teacher123")));
-        Student s1 = students.save(new Student("SV001", "Tran Thi B", "student1@school.edu",
-                encoder.encode("student123")));
-        Student s2 = students.save(new Student("SV002", "Le Van C", "student2@school.edu",
-                encoder.encode("student123")));
+        Student s1 = students.save(new Student("SV001", "Tran Thi B", "student1@school.edu"));
+        Student s2 = students.save(new Student("SV002", "Le Van C", "student2@school.edu"));
         ClassRoom cls = classes.save(new ClassRoom(teacher, "Web Programming", "B101"));
         enrollments.save(new Enrollment(s1, cls));
         enrollments.save(new Enrollment(s2, cls));
-        log.info("Seeded demo data: teacher@school.edu / teacher123, student1@school.edu & student2@school.edu / student123");
+        log.info("Seeded demo data: teacher@school.edu / teacher123, students SV001 & SV002");
     }
 }
